@@ -2,7 +2,6 @@
 developmentMode = false
 showWarningOnDirectExecution = false
 suppressDeprecationWarnings = true
-disableWatchdogWarning = true
 
 [server]
 headless = true
