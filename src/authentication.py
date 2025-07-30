@@ -11,6 +11,7 @@ import hashlib
 import secrets
 import re
 import logging
+import os
 from typing import Dict, Any, Optional, Tuple, List
 from datetime import datetime, timedelta
 from cryptography.fernet import Fernet
@@ -185,9 +186,13 @@ class AuthenticationManager:
             credentials = self._get_user_credentials()
 
             if not credentials['usernames']:
-                # Create default admin user if no users exist
-                self._create_default_admin()
-                credentials = self._get_user_credentials()
+                # Create default admin user if no users exist (skip in production deployment)
+                if os.getenv('ENVIRONMENT', 'development') != 'production':
+                    self._create_default_admin()
+                    credentials = self._get_user_credentials()
+                else:
+                    # In production, use empty credentials to avoid password validation issues
+                    credentials = {'usernames': {}, 'emails': {}, 'names': {}}
 
             # Initialize authenticator
             self.authenticator = stauth.Authenticate(
