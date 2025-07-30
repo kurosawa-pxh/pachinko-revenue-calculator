@@ -892,18 +892,18 @@ class DatabaseManager:
         try:
             cursor = conn.cursor()
 
-            # Use UPSERT to handle existing versions
+            # Use simple UPSERT without updated_at column for compatibility
             if self.db_type == 'postgresql':
                 cursor.execute("""
-                    INSERT INTO schema_version (version, updated_at) 
-                    VALUES (%s, CURRENT_TIMESTAMP)
+                    INSERT INTO schema_version (version) 
+                    VALUES (%s)
                     ON CONFLICT (version) 
-                    DO UPDATE SET updated_at = CURRENT_TIMESTAMP;
+                    DO NOTHING;
                 """, (version,))
             else:
                 cursor.execute("""
-                    INSERT OR REPLACE INTO schema_version (version, updated_at) 
-                    VALUES (?, datetime('now'));
+                    INSERT OR IGNORE INTO schema_version (version) 
+                    VALUES (?);
                 """, (version,))
 
             conn.commit()

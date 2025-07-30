@@ -216,12 +216,12 @@ class StreamlitApp:
             if st.form_submit_button("ログイン"):
                 if username and password:
                     try:
-                        user_id = auth_manager.authenticate_user(
+                        success, user_info = auth_manager.login_user(
                             username, password)
-                        if user_id:
+                        if success and user_info:
                             st.session_state.authenticated = True
-                            st.session_state.username = username
-                            st.session_state.user_id = user_id
+                            st.session_state.username = user_info['username']
+                            st.session_state.user_id = user_info['id']
                             st.session_state.current_page = 'dashboard'
                             st.rerun()
                         else:

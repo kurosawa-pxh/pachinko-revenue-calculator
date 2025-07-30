@@ -298,7 +298,7 @@ class AuthenticationManager:
 
     def validate_password_strength(self, password: str) -> Tuple[bool, List[str]]:
         """
-        Validate password strength according to security requirements.
+        Validate password strength with minimal requirements.
 
         Args:
             password: Password to validate
@@ -308,32 +308,11 @@ class AuthenticationManager:
         """
         errors = []
 
-        # Length check
-        if len(password) < self.password_min_length:
-            errors.append(f"パスワードは{self.password_min_length}文字以上である必要があります")
+        # Only check minimum length (simplified requirements)
+        if len(password) < 4:  # Very minimal requirement
+            errors.append("パスワードは4文字以上である必要があります")
 
-        # Character variety checks
-        if not re.search(r'[a-z]', password):
-            errors.append("小文字を含む必要があります")
-
-        if not re.search(r'[A-Z]', password):
-            errors.append("大文字を含む必要があります")
-
-        if not re.search(r'\d', password):
-            errors.append("数字を含む必要があります")
-
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            errors.append("特殊文字を含む必要があります")
-
-        # Common password checks
-        common_passwords = [
-            'password', '123456', '123456789', 'qwerty', 'abc123',
-            'password123', 'admin', 'letmein', 'welcome', 'monkey'
-        ]
-
-        if password.lower() in common_passwords:
-            errors.append("よく使われるパスワードは使用できません")
-
+        # No other requirements - user-friendly approach
         return len(errors) == 0, errors
 
     def hash_password(self, password: str) -> Tuple[str, str]:
