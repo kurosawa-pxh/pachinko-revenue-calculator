@@ -26,7 +26,6 @@ textColor = "#FFFFFF"
 font = "sans serif"
 
 [client]
-caching = true
 displayEnabled = true
 showErrorDetails = false
 toolbarMode = "minimal"
