@@ -124,7 +124,11 @@ class StreamlitApp:
         except Exception as e:
             self.logger.error(f"Failed to initialize app: {e}")
             st.error("アプリケーションの初期化に失敗しました。ページを再読み込みしてください。")
-            handle_error(e, ErrorCategory.SYSTEM, ErrorSeverity.CRITICAL)
+            try:
+                handle_error(e, ErrorCategory.SYSTEM, ErrorSeverity.CRITICAL)
+            except Exception as handler_error:
+                self.logger.error(f"Error handler failed: {handler_error}")
+                st.error(f"エラー処理中に問題が発生しました: {str(e)}")
 
     def _get_app_config(self) -> Dict[str, Any]:
         """Get application configuration for Streamlit deployment."""

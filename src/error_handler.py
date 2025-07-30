@@ -292,21 +292,20 @@ class ErrorHandler:
             }
         }
 
-    def handle_error(self, error: Exception, context: Optional[Dict[str, Any]] = None,
-                     show_user_message: bool = True) -> None:
+    def handle_error(self, error: Exception, category: ErrorCategory, severity: ErrorSeverity,
+                     context: Optional[Dict[str, Any]] = None, show_user_message: bool = True) -> None:
         """
         Handle an error with comprehensive logging and user notification.
 
         Args:
             error: The exception that occurred
+            category: Error category
+            severity: Error severity
             context: Additional context information
             show_user_message: Whether to show user-friendly message in Streamlit
         """
         # Update error statistics
         self._update_error_stats(error)
-
-        # Determine error category and severity
-        category, severity = self._categorize_error(error)
 
         # Create error details
         error_details = {
@@ -315,7 +314,7 @@ class ErrorHandler:
             'category': category.value,
             'severity': severity.value,
             'timestamp': datetime.now().isoformat(),
-            'context': context or {},
+            'context': context if isinstance(context, dict) else {} if context is None else {'info': str(context)},
             'traceback': traceback.format_exc() if severity in [ErrorSeverity.HIGH, ErrorSeverity.CRITICAL] else None
         }
 
@@ -375,9 +374,15 @@ class ErrorHandler:
 
         # Add context if available
         if error_details['context']:
-            context_str = ', '.join(
-                [f"{k}={v}" for k, v in error_details['context'].items()])
-            message += f" | Context: {context_str}"
+            try:
+                if isinstance(error_details['context'], dict):
+                    context_str = ', '.join(
+                        [f"{k}={v}" for k, v in error_details['context'].items()])
+                else:
+                    context_str = str(error_details['context'])
+                message += f" | Context: {context_str}"
+            except Exception as ctx_error:
+                message += f" | Context: {str(error_details['context'])}"
 
         # Log with appropriate level
         if severity == ErrorSeverity.CRITICAL:
@@ -622,18 +627,28 @@ def get_error_handler() -> ErrorHandler:
     return _global_error_handler
 
 
-def handle_error(error: Exception, context: Optional[Dict[str, Any]] = None,
-                 show_user_message: bool = True) -> None:
+def handle_error(error: Exception, category: ErrorCategory, severity: ErrorSeverity,
+                 context: Optional[Dict[str, Any]] = None, show_user_message: bool = True) -> None:
     """
     Convenience function to handle errors using the global error handler.
 
     Args:
         error: The exception that occurred
+        category: Error category
+        severity: Error severity
         context: Additional context information
         show_user_message: Whether to show user-friendly message in Streamlit
     """
-    error_handler = get_error_handler()
-    error_handler.handle_error(error, context, show_user_message)
+    try:
+        error_handler = get_error_handler()
+        error_handler.handle_error(
+            error, category, severity, context, show_user_message)
+    except Exception as handler_error:
+        # Fallback error handling
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Error handler failed: {handler_error}")
+        logger.error(f"Original error: {error}")
 
 
 def safe_execute(func: Callable, *args, context: Optional[Dict[str, Any]] = None, **kwargs) -> Any:

@@ -201,7 +201,10 @@ class PachinkoApp:
                 self.logger.error("Initialization errors:")
                 for error in initialization_errors:
                     self.logger.error(f"  - {error}")
-            handle_error(e, ErrorCategory.SYSTEM, ErrorSeverity.CRITICAL)
+            try:
+                handle_error(e, ErrorCategory.SYSTEM, ErrorSeverity.CRITICAL)
+            except Exception as handler_error:
+                self.logger.error(f"Error handler failed: {handler_error}")
             raise
 
     def _initialize_auth_manager(self) -> None:
