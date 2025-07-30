@@ -9,8 +9,10 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime, date, time, timedelta
 import logging
 
-from .models import GameSession, ValidationError
-from .database import DatabaseManager, DatabaseError
+from .models import GameSession
+from .exceptions import ValidationError
+from .database import DatabaseManager
+from .exceptions import DatabaseError
 from .stats import StatsCalculator
 from .export import ExportManager, ExportError
 from .error_handler import handle_error, get_error_handler, safe_execute, UIError, ErrorSeverity

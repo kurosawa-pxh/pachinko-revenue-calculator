@@ -17,8 +17,8 @@ try:
 except ImportError:
     POSTGRESQL_AVAILABLE = False
 
-from .models_fixed import GameSession, ValidationError
-from .error_handler import handle_error, ErrorCategory, ErrorSeverity
+from .models_fixed import GameSession
+from .exceptions import DatabaseError, ValidationError, ErrorCategory, ErrorSeverity
 from .config import get_config
 
 
@@ -98,8 +98,6 @@ class DatabaseManager:
 
         except Exception as e:
             self.logger.error(f"Failed to initialize database: {e}")
-            handle_error(
-                e, {'operation': 'database_initialization', 'db_path': self.db_path})
             raise DatabaseError(f"Database initialization failed: {e}")
 
     @contextmanager

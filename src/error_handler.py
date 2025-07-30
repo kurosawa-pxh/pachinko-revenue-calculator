@@ -13,8 +13,7 @@ from enum import Enum
 import os
 import sys
 
-from .models import ValidationError
-from .database import DatabaseError
+from .exceptions import ErrorSeverity, ErrorCategory, DatabaseError, ValidationError, AuthenticationError
 
 
 class ErrorSeverity(Enum):

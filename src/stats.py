@@ -11,7 +11,8 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 
 from .models import GameSession
-from .database import DatabaseManager, DatabaseError
+from .database import DatabaseManager
+from .exceptions import DatabaseError
 
 
 @dataclass

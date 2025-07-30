@@ -10,7 +10,8 @@ import os
 from typing import Optional, Dict, Any
 from datetime import datetime
 
-from .database import DatabaseManager, DatabaseError
+from .database import DatabaseManager
+from .exceptions import DatabaseError
 from .ui_manager import UIManager
 from .stats import StatsCalculator
 from .authentication import AuthenticationManager, AuthenticationError

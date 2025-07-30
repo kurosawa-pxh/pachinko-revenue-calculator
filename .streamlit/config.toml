@@ -4,14 +4,9 @@ enableCORS = false
 enableXsrfProtection = true
 maxUploadSize = 10
 maxMessageSize = 10
-enableStaticServing = true
-runOnSave = false
-allowRunOnSave = false
 
 [browser]
 gatherUsageStats = false
-serverAddress = "0.0.0.0"
-serverPort = 8501
 
 [theme]
 primaryColor = "#FFD700"
@@ -20,10 +15,5 @@ secondaryBackgroundColor = "#16213e"
 textColor = "#FFFFFF"
 font = "sans serif"
 
-[client]
-showErrorDetails = false
-toolbarMode = "minimal"
-
 [logger]
 level = "INFO"
-messageFormat = "%(asctime)s %(message)s"

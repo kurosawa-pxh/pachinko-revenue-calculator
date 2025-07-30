@@ -8,13 +8,8 @@ from typing import Optional
 import re
 
 
-class ValidationError(Exception):
-    """Custom exception for validation errors."""
-
-    def __init__(self, field_name: str, message: str):
-        self.field_name = field_name
-        self.message = message
-        super().__init__(f"{field_name}: {message}")
+# ValidationError moved to exceptions.py to avoid circular imports
+from .exceptions import ValidationError
 
 
 @dataclass

@@ -1,0 +1,26 @@
+# Minimal requirements for Streamlit Cloud deployment
+# Use this if the main requirements.txt fails
+
+# Core framework
+streamlit==1.29.0
+
+# Database
+psycopg2-binary==2.9.7
+
+# Data processing
+pandas==2.0.3
+plotly==5.17.0
+
+# Authentication and security
+streamlit-authenticator==0.2.3
+bcrypt==4.0.1
+cryptography==41.0.7
+
+# Utilities
+python-dateutil==2.8.2
+
+# PDF export (optional - remove if causing issues)
+# reportlab==4.0.4
+
+# System monitoring (optional - remove if causing issues)  
+# psutil==5.9.6
