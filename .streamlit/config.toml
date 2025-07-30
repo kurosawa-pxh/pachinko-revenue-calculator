@@ -1,8 +1,3 @@
-[global]
-developmentMode = false
-showWarningOnDirectExecution = false
-suppressDeprecationWarnings = true
-
 [server]
 headless = true
 enableCORS = false
@@ -26,23 +21,9 @@ textColor = "#FFFFFF"
 font = "sans serif"
 
 [client]
-displayEnabled = true
 showErrorDetails = false
 toolbarMode = "minimal"
 
 [logger]
 level = "INFO"
 messageFormat = "%(asctime)s %(message)s"
-
-# Performance optimizations for Streamlit Cloud
-[runner]
-magicEnabled = true
-installTracer = false
-fixMatplotlib = true
-postScriptGC = true
-fastReruns = true
-
-# Memory management
-[deprecation]
-showfileUploaderEncoding = false
-showImageFormat = false
