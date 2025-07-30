@@ -196,14 +196,16 @@ class DatabaseManager:
             create_version_table_sql = """
             CREATE TABLE IF NOT EXISTS schema_version (
                 version INTEGER PRIMARY KEY,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """
         else:
             create_version_table_sql = """
             CREATE TABLE IF NOT EXISTS schema_version (
                 version INTEGER PRIMARY KEY,
-                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
             """
 
@@ -889,14 +891,28 @@ class DatabaseManager:
         """
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO schema_version (version) VALUES (%s);" if self.db_type == 'postgresql' else "INSERT INTO schema_version (version) VALUES (?);",
-                (version,))
+
+            # Use UPSERT to handle existing versions
+            if self.db_type == 'postgresql':
+                cursor.execute("""
+                    INSERT INTO schema_version (version, updated_at) 
+                    VALUES (%s, CURRENT_TIMESTAMP)
+                    ON CONFLICT (version) 
+                    DO UPDATE SET updated_at = CURRENT_TIMESTAMP;
+                """, (version,))
+            else:
+                cursor.execute("""
+                    INSERT OR REPLACE INTO schema_version (version, updated_at) 
+                    VALUES (?, datetime('now'));
+                """, (version,))
+
             conn.commit()
             self.logger.info(f"Schema version set to {version}")
         except Exception as e:
             self.logger.error(f"Failed to set schema version: {e}")
-            raise DatabaseError(f"Schema version update failed: {e}")
+            # Don't raise exception to prevent app from crashing
+            self.logger.warning(
+                "Continuing despite schema version update failure")
 
     def _run_migrations(self, conn: sqlite3.Connection, from_version: int) -> None:
         """

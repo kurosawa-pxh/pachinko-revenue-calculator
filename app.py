@@ -238,16 +238,17 @@ class StreamlitApp:
             st.subheader("新規登録")
 
             username = st.text_input("ユーザー名（新規）")
+            email = st.text_input("メールアドレス", placeholder="example@email.com")
             password = st.text_input("パスワード（新規）", type="password")
             password_confirm = st.text_input("パスワード確認", type="password")
 
             if st.form_submit_button("登録"):
-                if username and password and password_confirm:
+                if username and email and password and password_confirm:
                     if password != password_confirm:
                         st.error("パスワードが一致しません。")
                     else:
                         try:
-                            if auth_manager.create_user_account(username, password):
+                            if auth_manager.register_user(username, email, password):
                                 st.success("アカウントが作成されました。ログインしてください。")
                             else:
                                 st.error("アカウントの作成に失敗しました。")
