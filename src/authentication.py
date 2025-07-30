@@ -96,6 +96,14 @@ class AuthenticationManager:
     def _initialize_auth_database(self) -> None:
         """Initialize the authentication database."""
         try:
+            # Check if database is already initialized
+            if self._is_auth_database_initialized():
+                self.logger.info(
+                    "Authentication database already initialized, skipping initialization")
+                return
+
+            self.logger.info("Initializing authentication database...")
+
             with self._get_auth_connection() as conn:
                 # Create users table
                 conn.execute("""
@@ -160,7 +168,29 @@ class AuthenticationManager:
         except Exception as e:
             self.logger.error(
                 f"Failed to initialize authentication database: {e}")
-            raise AuthenticationError(f"Database initialization failed: {e}")
+            # Don't raise exception to prevent app from crashing
+            self.logger.warning(
+                "Continuing with existing authentication database despite initialization error")
+
+    def _is_auth_database_initialized(self) -> bool:
+        """
+        Check if the authentication database is already initialized.
+
+        Returns:
+            bool: True if database is initialized, False otherwise
+        """
+        try:
+            with self._get_auth_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    SELECT name FROM sqlite_master 
+                    WHERE type='table' AND name='users';
+                """)
+                return cursor.fetchone() is not None
+        except Exception as e:
+            self.logger.debug(
+                f"Authentication database initialization check failed: {e}")
+            return False
 
     @contextmanager
     def _get_auth_connection(self):
@@ -241,8 +271,19 @@ class AuthenticationManager:
             return {'usernames': {}, 'emails': {}, 'names': {}}
 
     def _create_default_admin(self) -> None:
-        """Create default admin user."""
+        """Create default admin user if no users exist."""
         try:
+            # Check if any users already exist
+            with self._get_auth_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM users;")
+                user_count = cursor.fetchone()[0]
+
+                if user_count > 0:
+                    self.logger.info(
+                        "Users already exist, skipping default admin creation")
+                    return
+
             default_username = "admin"
             default_email = "admin@pachinko.local"
             default_password = "admin123"  # Should be changed on first login
@@ -253,6 +294,7 @@ class AuthenticationManager:
 
         except Exception as e:
             self.logger.error(f"Failed to create default admin: {e}")
+            # Don't raise exception to prevent app from crashing
 
     def validate_password_strength(self, password: str) -> Tuple[bool, List[str]]:
         """

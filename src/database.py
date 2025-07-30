@@ -76,12 +76,19 @@ class DatabaseManager:
     def _initialize_database(self) -> None:
         """Initialize the database and create tables if they don't exist."""
         try:
+            # Check if database is already initialized to avoid repeated initialization
+            if self._is_database_initialized():
+                self.logger.info(
+                    "Database already initialized, skipping initialization")
+                return
+
             with self._get_connection() as conn:
                 # Check if this is a new database or needs migration
                 current_version = self._get_schema_version(conn)
 
                 if current_version == 0:
                     # New database - create all tables and indexes
+                    self.logger.info("Initializing new database...")
                     self._create_schema_version_table(conn)
                     self._create_tables(conn)
                     self._create_indexes(conn)
@@ -89,16 +96,22 @@ class DatabaseManager:
                     self.logger.info("New database initialized successfully")
                 elif current_version < self.CURRENT_SCHEMA_VERSION:
                     # Existing database - run migrations
+                    self.logger.info(
+                        f"Migrating database from version {current_version} to {self.CURRENT_SCHEMA_VERSION}")
                     self._run_migrations(conn, current_version)
                     self.logger.info(
                         f"Database migrated from version {current_version} to {self.CURRENT_SCHEMA_VERSION}")
                 else:
                     # Database is up to date
-                    self.logger.info("Database is up to date")
+                    self.logger.info(
+                        f"Database is up to date (version {current_version})")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize database: {e}")
-            raise DatabaseError(f"Database initialization failed: {e}")
+            # Don't raise exception to prevent app from crashing
+            # Log the error but continue with existing database
+            self.logger.warning(
+                "Continuing with existing database despite initialization error")
 
     @contextmanager
     def _get_connection(self):
@@ -798,6 +811,38 @@ class DatabaseManager:
         except sqlite3.Error as e:
             self.logger.error(f"Data integrity check failed: {e}")
             raise DatabaseError(f"Data integrity check failed: {e}")
+
+    def _is_database_initialized(self) -> bool:
+        """
+        Check if the database is already initialized.
+
+        Returns:
+            bool: True if database is initialized, False otherwise
+        """
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+
+                if self.db_type == 'postgresql':
+                    # Check if main table exists
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_name = 'game_sessions'
+                        );
+                    """)
+                    return cursor.fetchone()[0]
+                else:
+                    # SQLite
+                    cursor.execute("""
+                        SELECT name FROM sqlite_master 
+                        WHERE type='table' AND name='game_sessions';
+                    """)
+                    return cursor.fetchone() is not None
+
+        except Exception as e:
+            self.logger.debug(f"Database initialization check failed: {e}")
+            return False
 
     def _get_schema_version(self, conn) -> int:
         """

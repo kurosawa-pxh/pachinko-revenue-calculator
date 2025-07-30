@@ -8,7 +8,7 @@ import streamlit as st
 import logging
 import os
 from typing import Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .database import DatabaseManager
 from .exceptions import DatabaseError
@@ -121,33 +121,86 @@ class PachinkoApp:
         """
         Initialize all application components in the correct order.
         """
+        initialization_errors = []
+
         try:
             self.logger.info(
                 "Initializing Pachinko Revenue Calculator components...")
 
             # Initialize authentication manager first
-            self._initialize_auth_manager()
+            try:
+                self._initialize_auth_manager()
+            except Exception as e:
+                error_msg = f"Authentication manager initialization failed: {e}"
+                self.logger.error(error_msg)
+                initialization_errors.append(error_msg)
 
             # Initialize database manager with encryption if enabled
-            self._initialize_database_manager()
+            try:
+                self._initialize_database_manager()
+            except Exception as e:
+                error_msg = f"Database manager initialization failed: {e}"
+                self.logger.error(error_msg)
+                initialization_errors.append(error_msg)
 
             # Initialize statistics calculator
-            self._initialize_stats_calculator()
+            try:
+                self._initialize_stats_calculator()
+            except Exception as e:
+                error_msg = f"Statistics calculator initialization failed: {e}"
+                self.logger.error(error_msg)
+                initialization_errors.append(error_msg)
 
             # Initialize offline storage manager
-            self._initialize_offline_manager()
+            try:
+                self._initialize_offline_manager()
+            except Exception as e:
+                error_msg = f"Offline manager initialization failed: {e}"
+                self.logger.warning(error_msg)  # Non-critical
+                initialization_errors.append(error_msg)
 
             # Initialize export manager
-            self._initialize_export_manager()
+            try:
+                self._initialize_export_manager()
+            except Exception as e:
+                error_msg = f"Export manager initialization failed: {e}"
+                self.logger.warning(error_msg)  # Non-critical
+                initialization_errors.append(error_msg)
 
             # Initialize UI manager last (depends on other components)
-            self._initialize_ui_manager()
+            try:
+                self._initialize_ui_manager()
+            except Exception as e:
+                error_msg = f"UI manager initialization failed: {e}"
+                self.logger.error(error_msg)
+                initialization_errors.append(error_msg)
 
-            self.is_initialized = True
-            self.logger.info("All components initialized successfully")
+            # Check if critical components are initialized
+            critical_components_ok = (
+                self.auth_manager is not None and
+                self.db_manager is not None and
+                self.ui_manager is not None
+            )
+
+            if critical_components_ok:
+                self.is_initialized = True
+                if initialization_errors:
+                    self.logger.warning(
+                        f"Components initialized with {len(initialization_errors)} warnings/errors")
+                    for error in initialization_errors:
+                        self.logger.warning(f"  - {error}")
+                else:
+                    self.logger.info("All components initialized successfully")
+            else:
+                self.logger.error("Critical components failed to initialize")
+                raise RuntimeError("Critical component initialization failed")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize components: {e}")
+            if initialization_errors:
+                self.logger.error("Initialization errors:")
+                for error in initialization_errors:
+                    self.logger.error(f"  - {error}")
             handle_error(e, ErrorCategory.SYSTEM, ErrorSeverity.CRITICAL)
             raise
 
@@ -163,7 +216,8 @@ class PachinkoApp:
             )
 
             # Configure security settings
-            self.auth_manager.session_timeout = security_config['session_timeout']
+            self.auth_manager.session_timeout = timedelta(
+                seconds=security_config['session_timeout'])
             self.auth_manager.max_login_attempts = security_config['max_login_attempts']
             self.auth_manager.password_min_length = security_config['password_min_length']
 
@@ -184,7 +238,8 @@ class PachinkoApp:
 
             self.db_manager = DatabaseManager(
                 db_path=db_config['path'],
-                encryption_manager=encryption_manager
+                encryption_manager=encryption_manager,
+                config=self.config
             )
 
             self.logger.info("Database manager initialized")
