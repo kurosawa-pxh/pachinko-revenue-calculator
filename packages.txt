@@ -1,19 +1,5 @@
-# System packages required for Streamlit Cloud deployment
-# These packages will be installed via apt-get
-
-# Required for PostgreSQL connectivity
 libpq-dev
-
-# Required for PDF generation
+libffi-dev
+build-essential
 libcairo2-dev
 libpango1.0-dev
-libgdk-pixbuf2.0-dev
-libffi-dev
-shared-mime-info
-
-# Required for image processing (if needed)
-libjpeg-dev
-libpng-dev
-
-# Required for cryptography
-build-essential
