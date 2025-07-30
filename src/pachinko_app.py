@@ -239,10 +239,14 @@ class PachinkoApp:
             # Pass encryption manager if encryption is enabled
             encryption_manager = self.auth_manager if db_config['enable_encryption'] else None
 
+            # DatabaseManager expects a Config object, not a dict
+            from .config import get_config
+            config_obj = get_config()
+
             self.db_manager = DatabaseManager(
                 db_path=db_config['path'],
                 encryption_manager=encryption_manager,
-                config=self.config
+                config=config_obj
             )
 
             self.logger.info("Database manager initialized")
@@ -254,8 +258,12 @@ class PachinkoApp:
     def _initialize_stats_calculator(self) -> None:
         """Initialize the statistics calculator."""
         try:
-            self.stats_calculator = StatsCalculator(self.db_manager)
-            self.logger.info("Statistics calculator initialized")
+            if self.db_manager:
+                self.stats_calculator = StatsCalculator(self.db_manager)
+                self.logger.info("Statistics calculator initialized")
+            else:
+                raise RuntimeError(
+                    "Database manager is required for statistics calculator")
 
         except Exception as e:
             self.logger.error(
@@ -265,11 +273,12 @@ class PachinkoApp:
     def _initialize_offline_manager(self) -> None:
         """Initialize the offline storage manager."""
         try:
-            if self.config['features']['offline_mode']:
-                self.offline_manager = OfflineStorageManager()
+            if self.config['features']['offline_mode'] and self.db_manager:
+                self.offline_manager = OfflineStorageManager(self.db_manager)
                 self.logger.info("Offline storage manager initialized")
             else:
-                self.logger.info("Offline mode disabled")
+                self.logger.info(
+                    "Offline mode disabled or database manager not available")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize offline manager: {e}")
@@ -278,11 +287,12 @@ class PachinkoApp:
     def _initialize_export_manager(self) -> None:
         """Initialize the export manager."""
         try:
-            if self.config['features']['export_enabled']:
+            if self.config['features']['export_enabled'] and self.stats_calculator:
                 self.export_manager = ExportManager(self.stats_calculator)
                 self.logger.info("Export manager initialized")
             else:
-                self.logger.info("Export functionality disabled")
+                self.logger.info(
+                    "Export functionality disabled or statistics calculator not available")
 
         except Exception as e:
             self.logger.error(f"Failed to initialize export manager: {e}")
