@@ -1,0 +1,50 @@
+[global]
+developmentMode = false
+showWarningOnDirectExecution = false
+suppressDeprecationWarnings = true
+disableWatchdogWarning = true
+
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 10
+maxMessageSize = 10
+enableStaticServing = true
+runOnSave = false
+allowRunOnSave = false
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+serverPort = 8501
+
+[theme]
+primaryColor = "#FFD700"
+backgroundColor = "#1a1a2e"
+secondaryBackgroundColor = "#16213e"
+textColor = "#FFFFFF"
+font = "sans serif"
+
+[client]
+caching = true
+displayEnabled = true
+showErrorDetails = false
+toolbarMode = "minimal"
+
+[logger]
+level = "INFO"
+messageFormat = "%(asctime)s %(message)s"
+
+# Performance optimizations for Streamlit Cloud
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+postScriptGC = true
+fastReruns = true
+
+# Memory management
+[deprecation]
+showfileUploaderEncoding = false
+showImageFormat = false
