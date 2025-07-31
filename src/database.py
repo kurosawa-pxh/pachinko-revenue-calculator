@@ -53,8 +53,8 @@ class DatabaseManager:
         self.encryption_manager = encryption_manager
         self.logger = logging.getLogger(__name__)
 
-        # Database type and connection settings
-        self.db_type = self.db_config['type']
+        # Force SQLite for this application
+        self.db_type = 'sqlite'
         self.connection_pool = None
 
         # Set database path for SQLite
@@ -130,11 +130,8 @@ class DatabaseManager:
         """
         conn = None
         try:
-            if self.db_type == 'postgresql':
-                conn = self._get_postgresql_connection()
-            else:
-                conn = self._get_sqlite_connection()
-
+            # Force SQLite connection for this application
+            conn = self._get_sqlite_connection()
             yield conn
         except Exception as e:
             if conn:
@@ -146,11 +143,7 @@ class DatabaseManager:
             raise DatabaseError(f"Database connection failed: {e}")
         finally:
             if conn:
-                if self.db_type == 'postgresql' and self.connection_pool:
-                    # Return connection to pool
-                    self.connection_pool.putconn(conn)
-                elif conn:
-                    conn.close()
+                conn.close()
 
     def _get_sqlite_connection(self):
         """Get SQLite database connection."""
