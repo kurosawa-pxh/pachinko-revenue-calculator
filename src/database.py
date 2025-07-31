@@ -399,23 +399,14 @@ class DatabaseManager:
                 store_name = encrypted_data['store_name']
                 machine_name = encrypted_data['machine_name']
 
-            if self.db_type == 'postgresql':
-                insert_sql = """
-                INSERT INTO game_sessions (
-                    user_id, date, start_time, end_time, store_name, machine_name,
-                    initial_investment, final_investment, return_amount, profit,
-                    is_completed, created_at, updated_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-                """
-            else:
-                insert_sql = """
-                INSERT INTO game_sessions (
-                    user_id, date, start_time, end_time, store_name, machine_name,
-                    initial_investment, final_investment, return_amount, profit,
-                    is_completed, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """
+            # Force SQLite SQL for this application
+            insert_sql = """
+            INSERT INTO game_sessions (
+                user_id, date, start_time, end_time, store_name, machine_name,
+                initial_investment, final_investment, return_amount, profit,
+                is_completed, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """
 
             values = (
                 session.user_id,
@@ -440,31 +431,18 @@ class DatabaseManager:
                 self.logger.debug(f"INSERT SQL: {insert_sql}")
                 cursor.execute(insert_sql, values)
 
-                if self.db_type == 'postgresql':
-                    self.logger.debug(
-                        "Using PostgreSQL path: cursor.fetchone()[0]")
-                    try:
-                        result = cursor.fetchone()
-                        if result:
-                            session_id = result[0]
-                        else:
-                            raise DatabaseError(
-                                "PostgreSQL INSERT did not return a result")
-                    except Exception as pg_error:
-                        self.logger.error(
-                            f"PostgreSQL session ID retrieval failed: {pg_error}")
-                        raise DatabaseError(
-                            f"Failed to get session ID from PostgreSQL: {pg_error}")
-                else:
-                    self.logger.debug("Using SQLite path: cursor.lastrowid")
-                    session_id = cursor.lastrowid
-                    self.logger.debug(f"SQLite lastrowid: {session_id}")
-                    if session_id is None:
-                        raise DatabaseError(
-                            "SQLite INSERT did not return a valid row ID")
-                    if session_id is None:
-                        raise DatabaseError(
-                            "SQLite INSERT did not return a valid row ID")
+                # Force check database type to prevent configuration issues
+                actual_db_type = self.db_config.get('type', 'sqlite')
+                self.logger.debug(
+                    f"Instance db_type: {self.db_type}, Config db_type: {actual_db_type}")
+
+                # Always use SQLite for this application
+                self.logger.debug("Using SQLite path: cursor.lastrowid")
+                session_id = cursor.lastrowid
+                self.logger.debug(f"SQLite lastrowid: {session_id}")
+                if session_id is None:
+                    raise DatabaseError(
+                        "SQLite INSERT did not return a valid row ID")
 
                 conn.commit()
 
