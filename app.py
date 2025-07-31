@@ -343,7 +343,7 @@ class StreamlitApp:
             st.subheader("収支サマリー")
 
             # Get user sessions
-            user_id = st.session_state.user_id
+            user_id = str(st.session_state.user_id)
             sessions = db_manager.get_sessions(user_id, limit=10)
 
             if sessions:
@@ -393,7 +393,7 @@ class StreamlitApp:
 
         try:
             db_manager = self.app.get_database_manager()
-            user_id = st.session_state.user_id
+            user_id = str(st.session_state.user_id)
 
             # Simple input form
             with st.form("session_input"):
@@ -429,7 +429,7 @@ class StreamlitApp:
                             profit = return_amount - final_investment
 
                             session = GameSession(
-                                user_id=user_id,
+                                user_id=str(user_id),
                                 date=date,
                                 start_time=datetime.combine(date, start_time),
                                 end_time=datetime.combine(date, end_time),
@@ -462,7 +462,7 @@ class StreamlitApp:
 
         try:
             db_manager = self.app.get_database_manager()
-            user_id = st.session_state.user_id
+            user_id = str(st.session_state.user_id)
 
             # Get all sessions
             sessions = db_manager.get_sessions(user_id, limit=50)
@@ -507,7 +507,7 @@ class StreamlitApp:
         try:
             db_manager = self.app.get_database_manager()
             stats_calculator = self.app.get_stats_calculator()
-            user_id = st.session_state.user_id
+            user_id = str(st.session_state.user_id)
 
             # Get sessions for stats
             sessions = db_manager.get_sessions(user_id, limit=100)

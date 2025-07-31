@@ -557,8 +557,8 @@ class DatabaseManager:
         """
         try:
             if self.db_type == 'postgresql':
-                base_sql = "SELECT * FROM game_sessions WHERE user_id = %s"
-                params = [user_id]
+                base_sql = "SELECT * FROM game_sessions WHERE user_id = %s::text"
+                params = [str(user_id)]
 
                 # Add date range filtering if provided
                 if date_range:

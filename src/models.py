@@ -21,7 +21,7 @@ class GameSession:
     Includes validation for all required fields and business logic constraints.
     """
     # Required fields for session start
-    user_id: str
+    user_id: str = field(default="")
     date: datetime
     start_time: datetime
     store_name: str
@@ -41,6 +41,12 @@ class GameSession:
     updated_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self):
+        """Post-initialization processing to ensure data types."""
+        # Ensure user_id is always a string
+        if self.user_id is not None:
+            self.user_id = str(self.user_id)
+
+    def __post_init__(self):
         """Validate the data after initialization."""
         self.validate()
 
@@ -52,7 +58,7 @@ class GameSession:
             ValidationError: If any validation rule is violated.
         """
         # Validate required string fields
-        if not self.user_id or not self.user_id.strip():
+        if not self.user_id or not str(self.user_id).strip():
             raise ValidationError("user_id", "ユーザーIDは必須です")
 
         if not self.store_name or not self.store_name.strip():
