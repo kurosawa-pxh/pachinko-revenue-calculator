@@ -330,22 +330,242 @@ class StreamlitApp:
     def _render_dashboard_page(self, ui_manager) -> None:
         """Render the dashboard page."""
         st.title("📊 ダッシュボード")
-        ui_manager.render_dashboard()
+
+        try:
+            # Get database manager
+            db_manager = self.app.get_database_manager()
+            stats_calculator = self.app.get_stats_calculator()
+
+            # Simple dashboard implementation
+            st.subheader("収支サマリー")
+
+            # Get user sessions
+            user_id = st.session_state.user_id
+            sessions = db_manager.get_sessions(user_id, limit=10)
+
+            if sessions:
+                # Calculate basic stats
+                total_profit = sum(session.profit or 0 for session in sessions)
+                total_sessions = len(sessions)
+                win_sessions = len(
+                    [s for s in sessions if (s.profit or 0) > 0])
+                win_rate = (win_sessions / total_sessions *
+                            100) if total_sessions > 0 else 0
+
+                # Display metrics
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.metric("総収支", f"¥{total_profit:,}")
+                with col2:
+                    st.metric("総セッション数", total_sessions)
+                with col3:
+                    st.metric("勝率", f"{win_rate:.1f}%")
+
+                # Recent sessions
+                st.subheader("最近のセッション")
+                for session in sessions[:5]:
+                    with st.container():
+                        col1, col2, col3, col4 = st.columns(4)
+                        with col1:
+                            st.write(f"📅 {session.date}")
+                        with col2:
+                            st.write(f"🏪 {session.store_name}")
+                        with col3:
+                            st.write(f"🎰 {session.machine_name}")
+                        with col4:
+                            profit_color = "green" if (
+                                session.profit or 0) >= 0 else "red"
+                            st.markdown(f"<span style='color: {profit_color}'>¥{session.profit or 0:,}</span>",
+                                        unsafe_allow_html=True)
+            else:
+                st.info("まだセッションが記録されていません。「📝 遊技記録」から記録を開始してください。")
+
+        except Exception as e:
+            st.error("ダッシュボードの表示中にエラーが発生しました。")
+            self.logger.error(f"Dashboard error: {e}")
 
     def _render_input_page(self, ui_manager) -> None:
         """Render the input page."""
         st.title("📝 遊技記録")
-        ui_manager.render_input_interface()
+
+        try:
+            db_manager = self.app.get_database_manager()
+            user_id = st.session_state.user_id
+
+            # Simple input form
+            with st.form("session_input"):
+                st.subheader("新しいセッションを記録")
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    date = st.date_input("日付", value=datetime.now().date())
+                    store_name = st.text_input(
+                        "店舗名", placeholder="例: パチンコ店ABC")
+                    machine_name = st.text_input(
+                        "機種名", placeholder="例: CR花の慶次")
+
+                with col2:
+                    start_time = st.time_input(
+                        "開始時間", value=datetime.now().time())
+                    end_time = st.time_input(
+                        "終了時間", value=datetime.now().time())
+                    initial_investment = st.number_input(
+                        "投資金額", min_value=0, value=1000, step=100)
+
+                final_investment = st.number_input(
+                    "最終投資額", min_value=0, value=initial_investment, step=100)
+                return_amount = st.number_input(
+                    "回収金額", min_value=0, value=0, step=100)
+
+                if st.form_submit_button("記録する", use_container_width=True):
+                    if store_name and machine_name:
+                        try:
+                            # Create session object
+                            from src.models import GameSession
+
+                            profit = return_amount - final_investment
+
+                            session = GameSession(
+                                user_id=user_id,
+                                date=date,
+                                start_time=datetime.combine(date, start_time),
+                                end_time=datetime.combine(date, end_time),
+                                store_name=store_name,
+                                machine_name=machine_name,
+                                initial_investment=initial_investment,
+                                final_investment=final_investment,
+                                return_amount=return_amount,
+                                profit=profit,
+                                is_completed=True
+                            )
+
+                            # Save to database
+                            session_id = db_manager.create_session(session)
+                            st.success(f"セッションが記録されました！ (ID: {session_id})")
+
+                        except Exception as e:
+                            st.error("セッションの記録に失敗しました。")
+                            self.logger.error(f"Session creation error: {e}")
+                    else:
+                        st.error("店舗名と機種名は必須です。")
+
+        except Exception as e:
+            st.error("入力ページの表示中にエラーが発生しました。")
+            self.logger.error(f"Input page error: {e}")
 
     def _render_history_page(self, ui_manager) -> None:
         """Render the history page."""
         st.title("📋 遊技履歴")
-        ui_manager.render_history_view()
+
+        try:
+            db_manager = self.app.get_database_manager()
+            user_id = st.session_state.user_id
+
+            # Get all sessions
+            sessions = db_manager.get_sessions(user_id, limit=50)
+
+            if sessions:
+                st.subheader(f"履歴 ({len(sessions)}件)")
+
+                # Display sessions in a table-like format
+                for i, session in enumerate(sessions):
+                    with st.container():
+                        col1, col2, col3, col4, col5, col6 = st.columns(6)
+
+                        with col1:
+                            st.write(f"📅 {session.date}")
+                        with col2:
+                            st.write(f"🏪 {session.store_name}")
+                        with col3:
+                            st.write(f"🎰 {session.machine_name}")
+                        with col4:
+                            st.write(f"💰 ¥{session.final_investment:,}")
+                        with col5:
+                            st.write(f"💸 ¥{session.return_amount:,}")
+                        with col6:
+                            profit = session.profit or 0
+                            profit_color = "green" if profit >= 0 else "red"
+                            st.markdown(f"<span style='color: {profit_color}'>¥{profit:,}</span>",
+                                        unsafe_allow_html=True)
+
+                        if i < len(sessions) - 1:
+                            st.divider()
+            else:
+                st.info("まだ履歴がありません。")
+
+        except Exception as e:
+            st.error("履歴の表示中にエラーが発生しました。")
+            self.logger.error(f"History page error: {e}")
 
     def _render_stats_page(self, ui_manager) -> None:
         """Render the statistics page."""
         st.title("📈 統計分析")
-        ui_manager.render_stats_dashboard()
+
+        try:
+            db_manager = self.app.get_database_manager()
+            stats_calculator = self.app.get_stats_calculator()
+            user_id = st.session_state.user_id
+
+            # Get sessions for stats
+            sessions = db_manager.get_sessions(user_id, limit=100)
+
+            if sessions:
+                # Basic statistics
+                total_sessions = len(sessions)
+                total_investment = sum(
+                    session.final_investment for session in sessions)
+                total_return = sum(
+                    session.return_amount for session in sessions)
+                total_profit = total_return - total_investment
+                win_sessions = len(
+                    [s for s in sessions if (s.profit or 0) > 0])
+                win_rate = (win_sessions / total_sessions *
+                            100) if total_sessions > 0 else 0
+
+                # Display stats
+                st.subheader("基本統計")
+
+                col1, col2, col3, col4 = st.columns(4)
+                with col1:
+                    st.metric("総セッション数", total_sessions)
+                with col2:
+                    st.metric("総投資額", f"¥{total_investment:,}")
+                with col3:
+                    st.metric("総回収額", f"¥{total_return:,}")
+                with col4:
+                    profit_delta = f"¥{total_profit:,}"
+                    st.metric("総収支", profit_delta, delta=profit_delta)
+
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("勝率", f"{win_rate:.1f}%")
+                with col2:
+                    avg_profit = total_profit / total_sessions if total_sessions > 0 else 0
+                    st.metric("平均収支", f"¥{avg_profit:,.0f}")
+
+                # Store analysis
+                st.subheader("店舗別分析")
+                store_stats = {}
+                for session in sessions:
+                    store = session.store_name
+                    if store not in store_stats:
+                        store_stats[store] = {'sessions': 0, 'profit': 0}
+                    store_stats[store]['sessions'] += 1
+                    store_stats[store]['profit'] += session.profit or 0
+
+                for store, stats in store_stats.items():
+                    avg_profit = stats['profit'] / stats['sessions']
+                    profit_color = "green" if stats['profit'] >= 0 else "red"
+                    st.write(f"🏪 **{store}**: {stats['sessions']}回, "
+                             f"<span style='color: {profit_color}'>¥{stats['profit']:,}</span> "
+                             f"(平均: ¥{avg_profit:,.0f})", unsafe_allow_html=True)
+
+            else:
+                st.info("統計を表示するにはセッションデータが必要です。")
+
+        except Exception as e:
+            st.error("統計の表示中にエラーが発生しました。")
+            self.logger.error(f"Stats page error: {e}")
 
     def _render_export_page(self, ui_manager) -> None:
         """Render the export page."""

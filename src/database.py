@@ -486,7 +486,11 @@ class DatabaseManager:
             )
 
             with self._get_connection() as conn:
-                cursor = conn.execute(update_sql, values)
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute(update_sql, values)
+                else:
+                    cursor = conn.execute(update_sql, values)
                 conn.commit()
 
                 if cursor.rowcount == 0:
@@ -519,7 +523,11 @@ class DatabaseManager:
             select_sql = "SELECT * FROM game_sessions WHERE id = ?"
 
             with self._get_connection() as conn:
-                cursor = conn.execute(select_sql, (session_id,))
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute(select_sql, (session_id,))
+                else:
+                    cursor = conn.execute(select_sql, (session_id,))
                 row = cursor.fetchone()
 
                 if row:
@@ -570,7 +578,11 @@ class DatabaseManager:
                 params.append(offset)
 
             with self._get_connection() as conn:
-                cursor = conn.execute(base_sql, params)
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute(base_sql, params)
+                else:
+                    cursor = conn.execute(base_sql, params)
                 rows = cursor.fetchall()
 
                 sessions = [self._row_to_session(row) for row in rows]
@@ -625,7 +637,11 @@ class DatabaseManager:
             delete_sql = "DELETE FROM game_sessions WHERE id = ?"
 
             with self._get_connection() as conn:
-                cursor = conn.execute(delete_sql, (session_id,))
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute(delete_sql, (session_id,))
+                else:
+                    cursor = conn.execute(delete_sql, (session_id,))
                 conn.commit()
 
                 if cursor.rowcount == 0:
@@ -799,7 +815,11 @@ class DatabaseManager:
             """
 
             with self._get_connection() as conn:
-                cursor = conn.execute(integrity_sql)
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute(integrity_sql)
+                else:
+                    cursor = conn.execute(integrity_sql)
                 row = cursor.fetchone()
 
                 return {
@@ -951,27 +971,52 @@ class DatabaseManager:
                 version = self._get_schema_version(conn)
 
                 # Get table information
-                cursor = conn.execute("""
-                    SELECT name FROM sqlite_master 
-                    WHERE type='table' AND name NOT LIKE 'sqlite_%'
-                    ORDER BY name;
-                """)
-                tables = [row[0] for row in cursor.fetchall()]
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        SELECT table_name FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        ORDER BY table_name;
+                    """)
+                    tables = [row[0] for row in cursor.fetchall()]
 
-                # Get index information
-                cursor = conn.execute("""
-                    SELECT name FROM sqlite_master 
-                    WHERE type='index' AND name NOT LIKE 'sqlite_%'
-                    ORDER BY name;
-                """)
-                indexes = [row[0] for row in cursor.fetchall()]
+                    # Get index information
+                    cursor.execute("""
+                        SELECT indexname FROM pg_indexes 
+                        WHERE schemaname = 'public' 
+                        ORDER BY indexname;
+                    """)
+                    indexes = [row[0] for row in cursor.fetchall()]
 
-                # Get record counts
-                cursor = conn.execute("SELECT COUNT(*) FROM game_sessions;")
+                    # Get record counts
+                    cursor.execute("SELECT COUNT(*) FROM game_sessions;")
+                else:
+                    cursor = conn.execute("""
+                        SELECT name FROM sqlite_master 
+                        WHERE type='table' AND name NOT LIKE 'sqlite_%'
+                        ORDER BY name;
+                    """)
+                    tables = [row[0] for row in cursor.fetchall()]
+
+                    # Get index information
+                    cursor = conn.execute("""
+                        SELECT name FROM sqlite_master 
+                        WHERE type='index' AND name NOT LIKE 'sqlite_%'
+                        ORDER BY name;
+                    """)
+                    indexes = [row[0] for row in cursor.fetchall()]
+
+                    # Get record counts
+                    cursor = conn.execute(
+                        "SELECT COUNT(*) FROM game_sessions;")
                 total_sessions = cursor.fetchone()[0]
 
-                cursor = conn.execute(
-                    "SELECT COUNT(*) FROM game_sessions WHERE is_completed = 1;")
+                if self.db_type == 'postgresql':
+                    cursor.execute(
+                        "SELECT COUNT(*) FROM game_sessions WHERE is_completed = true;")
+                else:
+                    cursor = conn.execute(
+                        "SELECT COUNT(*) FROM game_sessions WHERE is_completed = 1;")
                 completed_sessions = cursor.fetchone()[0]
 
                 return {
