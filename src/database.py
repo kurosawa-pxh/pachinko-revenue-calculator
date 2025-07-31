@@ -435,12 +435,36 @@ class DatabaseManager:
 
             with self._get_connection() as conn:
                 cursor = conn.cursor()
+                self.logger.debug(
+                    f"Executing INSERT with db_type: {self.db_type}")
+                self.logger.debug(f"INSERT SQL: {insert_sql}")
                 cursor.execute(insert_sql, values)
 
                 if self.db_type == 'postgresql':
-                    session_id = cursor.fetchone()[0]
+                    self.logger.debug(
+                        "Using PostgreSQL path: cursor.fetchone()[0]")
+                    try:
+                        result = cursor.fetchone()
+                        if result:
+                            session_id = result[0]
+                        else:
+                            raise DatabaseError(
+                                "PostgreSQL INSERT did not return a result")
+                    except Exception as pg_error:
+                        self.logger.error(
+                            f"PostgreSQL session ID retrieval failed: {pg_error}")
+                        raise DatabaseError(
+                            f"Failed to get session ID from PostgreSQL: {pg_error}")
                 else:
+                    self.logger.debug("Using SQLite path: cursor.lastrowid")
                     session_id = cursor.lastrowid
+                    self.logger.debug(f"SQLite lastrowid: {session_id}")
+                    if session_id is None:
+                        raise DatabaseError(
+                            "SQLite INSERT did not return a valid row ID")
+                    if session_id is None:
+                        raise DatabaseError(
+                            "SQLite INSERT did not return a valid row ID")
 
                 conn.commit()
 
