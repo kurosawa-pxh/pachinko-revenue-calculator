@@ -102,7 +102,7 @@ class Config:
                 'type': 'sqlite',
                 'path': os.getenv('DATABASE_PATH', 'pachinko_data.db'),
                 'auth_path': os.getenv('AUTH_DATABASE_PATH', 'pachinko_auth.db'),
-                'enable_encryption': os.getenv('ENABLE_ENCRYPTION', 'true').lower() == 'true'
+                'enable_encryption': os.getenv('ENABLE_ENCRYPTION', 'false').lower() == 'true'
             }
 
     def _get_security_config(self) -> Dict[str, Any]:
