@@ -20,8 +20,8 @@ class GameSession:
     Represents a single gaming session with start/end data and calculated profit.
     Includes validation for all required fields and business logic constraints.
     """
-    # Required fields for session start
-    user_id: str = field(default="")
+    # Required fields for session start (no defaults)
+    user_id: str
     date: datetime
     start_time: datetime
     store_name: str
