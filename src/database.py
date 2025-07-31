@@ -556,26 +556,50 @@ class DatabaseManager:
             DatabaseError: If retrieval fails
         """
         try:
-            base_sql = "SELECT * FROM game_sessions WHERE user_id = ?"
-            params = [user_id]
+            if self.db_type == 'postgresql':
+                base_sql = "SELECT * FROM game_sessions WHERE user_id = %s"
+                params = [user_id]
 
-            # Add date range filtering if provided
-            if date_range:
-                start_date, end_date = date_range
-                base_sql += " AND date BETWEEN ? AND ?"
-                params.extend([start_date.isoformat(), end_date.isoformat()])
+                # Add date range filtering if provided
+                if date_range:
+                    start_date, end_date = date_range
+                    base_sql += " AND date BETWEEN %s AND %s"
+                    params.extend(
+                        [start_date.isoformat(), end_date.isoformat()])
 
-            # Add ordering
-            base_sql += " ORDER BY date DESC, start_time DESC"
+                # Add ordering
+                base_sql += " ORDER BY date DESC, start_time DESC"
 
-            # Add pagination
-            if limit:
-                base_sql += " LIMIT ?"
-                params.append(limit)
+                # Add pagination
+                if limit:
+                    base_sql += " LIMIT %s"
+                    params.append(limit)
 
-            if offset > 0:
-                base_sql += " OFFSET ?"
-                params.append(offset)
+                if offset > 0:
+                    base_sql += " OFFSET %s"
+                    params.append(offset)
+            else:
+                base_sql = "SELECT * FROM game_sessions WHERE user_id = ?"
+                params = [user_id]
+
+                # Add date range filtering if provided
+                if date_range:
+                    start_date, end_date = date_range
+                    base_sql += " AND date BETWEEN ? AND ?"
+                    params.extend(
+                        [start_date.isoformat(), end_date.isoformat()])
+
+                # Add ordering
+                base_sql += " ORDER BY date DESC, start_time DESC"
+
+                # Add pagination
+                if limit:
+                    base_sql += " LIMIT ?"
+                    params.append(limit)
+
+                if offset > 0:
+                    base_sql += " OFFSET ?"
+                    params.append(offset)
 
             with self._get_connection() as conn:
                 if self.db_type == 'postgresql':
@@ -1042,15 +1066,28 @@ class DatabaseManager:
         try:
             with self._get_connection() as conn:
                 # Get all table names
-                cursor = conn.execute("""
-                    SELECT name FROM sqlite_master 
-                    WHERE type='table' AND name NOT LIKE 'sqlite_%';
-                """)
-                tables = [row[0] for row in cursor.fetchall()]
+                if self.db_type == 'postgresql':
+                    cursor = conn.cursor()
+                    cursor.execute("""
+                        SELECT table_name FROM information_schema.tables 
+                        WHERE table_schema = 'public';
+                    """)
+                    tables = [row[0] for row in cursor.fetchall()]
 
-                # Drop all tables
-                for table in tables:
-                    conn.execute(f"DROP TABLE IF EXISTS {table};")
+                    # Drop all tables
+                    for table in tables:
+                        cursor.execute(
+                            f"DROP TABLE IF EXISTS {table} CASCADE;")
+                else:
+                    cursor = conn.execute("""
+                        SELECT name FROM sqlite_master 
+                        WHERE type='table' AND name NOT LIKE 'sqlite_%';
+                    """)
+                    tables = [row[0] for row in cursor.fetchall()]
+
+                    # Drop all tables
+                    for table in tables:
+                        conn.execute(f"DROP TABLE IF EXISTS {table};")
 
                 # Recreate schema
                 self._create_schema_version_table(conn)
