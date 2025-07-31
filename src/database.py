@@ -140,6 +140,9 @@ class DatabaseManager:
             if conn:
                 conn.rollback()
             self.logger.error(f"Database connection error: {e}")
+            self.logger.error(f"Error type: {type(e)}")
+            self.logger.error(f"Error args: {e.args}")
+            self.logger.error(f"Error repr: {repr(e)}")
             raise DatabaseError(f"Database connection failed: {e}")
         finally:
             if conn:
@@ -151,10 +154,30 @@ class DatabaseManager:
 
     def _get_sqlite_connection(self):
         """Get SQLite database connection."""
-        db_path = self.db_config.get('path', 'pachinko_data.db')
-        conn = sqlite3.connect(db_path)
-        conn.row_factory = sqlite3.Row  # Enable column access by name
-        return conn
+        try:
+            db_path = self.db_config.get('path', 'pachinko_data.db')
+            self.logger.debug(
+                f"Attempting to connect to SQLite database: {db_path}")
+
+            # Check if file exists and is accessible
+            if not os.path.exists(db_path):
+                self.logger.warning(f"Database file does not exist: {db_path}")
+
+            conn = sqlite3.connect(db_path, timeout=30.0)  # Add timeout
+            conn.row_factory = sqlite3.Row  # Enable column access by name
+
+            # Test the connection
+            conn.execute("SELECT 1").fetchone()
+
+            self.logger.debug(f"SQLite connection successful: {db_path}")
+            return conn
+
+        except Exception as e:
+            self.logger.error(f"Failed to create SQLite connection: {e}")
+            self.logger.error(f"Database path: {db_path}")
+            self.logger.error(f"Error type: {type(e)}")
+            self.logger.error(f"Error args: {e.args}")
+            raise
 
     def _get_postgresql_connection(self):
         """Get PostgreSQL database connection."""
