@@ -285,7 +285,10 @@ class StreamlitApp:
 
         except Exception as e:
             self.logger.error(f"Error in main application: {e}")
-            st.error("メインアプリケーションでエラーが発生しました。")
+            st.error(f"メインアプリケーションでエラーが発生しました: {str(e)}")
+            # Show more detailed error in development
+            if os.getenv('DEBUG', 'false').lower() == 'true':
+                st.exception(e)
 
     def _render_navigation_sidebar(self) -> None:
         """Render the navigation sidebar."""
@@ -328,7 +331,7 @@ class StreamlitApp:
                 self._logout()
 
     def _render_dashboard_page(self, ui_manager) -> None:
-        """Render the dashboard page."""
+        """Render the dashboard page with simple UI."""
         st.title("📊 ダッシュボード")
 
         try:
