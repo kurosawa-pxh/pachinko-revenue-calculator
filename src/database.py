@@ -57,9 +57,16 @@ class DatabaseManager:
         self.db_type = self.db_config['type']
         self.connection_pool = None
 
+        # Set database path for SQLite
+        if self.db_type == 'sqlite':
+            self.db_path = self.db_config.get('path', 'pachinko_data.db')
+        else:
+            self.db_path = None
+
         # Backward compatibility
         if db_path and self.db_type == 'sqlite':
             self.db_config['path'] = db_path
+            self.db_path = db_path
 
         self._initialize_database()
 
@@ -1101,3 +1108,49 @@ class DatabaseManager:
         except sqlite3.Error as e:
             self.logger.error(f"Failed to reset database: {e}")
             raise DatabaseError(f"Database reset failed: {e}")
+
+    def _row_to_session(self, row) -> GameSession:
+        """
+        Convert a database row to a GameSession object.
+
+        Args:
+            row: Database row (sqlite3.Row or psycopg2.extras.RealDictRow)
+
+        Returns:
+            GameSession: Converted session object
+        """
+        try:
+            # Convert row to dictionary for easier handling
+            if hasattr(row, '_asdict'):
+                # sqlite3.Row
+                data = dict(row)
+            elif hasattr(row, 'keys'):
+                # psycopg2.extras.RealDictRow or similar
+                data = dict(row)
+            else:
+                # Fallback for tuple-like rows
+                columns = ['id', 'user_id', 'date', 'start_time', 'end_time',
+                           'store_name', 'machine_name', 'initial_investment',
+                           'final_investment', 'return_amount', 'profit',
+                           'is_completed', 'created_at', 'updated_at']
+                data = dict(zip(columns, row))
+
+            # Decrypt sensitive data if encryption manager is available
+            if self.encryption_manager:
+                try:
+                    decrypted_data = self.encryption_manager.decrypt_user_data({
+                        'store_name': data['store_name'],
+                        'machine_name': data['machine_name']
+                    })
+                    data['store_name'] = decrypted_data['store_name']
+                    data['machine_name'] = decrypted_data['machine_name']
+                except Exception as e:
+                    self.logger.warning(f"Failed to decrypt session data: {e}")
+                    # Continue with encrypted data rather than failing
+
+            # Use the from_dict method to create the GameSession
+            return GameSession.from_dict(data)
+
+        except Exception as e:
+            self.logger.error(f"Failed to convert row to session: {e}")
+            raise DatabaseError(f"Row conversion failed: {e}")

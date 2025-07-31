@@ -3,7 +3,7 @@ Data models for the Pachinko Revenue Calculator application.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 import re
 
@@ -20,9 +20,9 @@ class GameSession:
     Represents a single gaming session with start/end data and calculated profit.
     Includes validation for all required fields and business logic constraints.
     """
-    # Required fields for session start
+    # Required fields for session start (no defaults)
     user_id: str
-    date: datetime
+    date: date
     start_time: datetime
     store_name: str
     machine_name: str
@@ -41,8 +41,10 @@ class GameSession:
     updated_at: datetime = field(default_factory=datetime.now)
 
     def __post_init__(self):
-        """Validate the data after initialization."""
-        self.validate()
+        """Post-initialization processing to ensure data types."""
+        # Ensure user_id is always a string
+        if self.user_id is not None:
+            self.user_id = str(self.user_id)
 
     def validate(self) -> None:
         """
@@ -52,7 +54,7 @@ class GameSession:
             ValidationError: If any validation rule is violated.
         """
         # Validate required string fields
-        if not self.user_id or not self.user_id.strip():
+        if not self.user_id or not str(self.user_id).strip():
             raise ValidationError("user_id", "ユーザーIDは必須です")
 
         if not self.store_name or not self.store_name.strip():
@@ -61,12 +63,12 @@ class GameSession:
         if not self.machine_name or not self.machine_name.strip():
             raise ValidationError("machine_name", "機種名は必須です")
 
-        # Validate store name format (allow Japanese characters, alphanumeric, and common symbols)
-        if not re.match(r'^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAFa-zA-Z0-9\s\-_「」]+$', self.store_name):
+        # Validate store name format (Japanese characters, alphanumeric, and common symbols)
+        if not re.match(r'^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\s\-_「」]+$', self.store_name):
             raise ValidationError("store_name", "店舗名に無効な文字が含まれています")
 
-        # Validate machine name format (allow Japanese characters, alphanumeric, and common symbols)
-        if not re.match(r'^[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAFa-zA-Z0-9\s\-_()〜Ⅴ]+$', self.machine_name):
+        # Validate machine name format (Japanese characters, alphanumeric, and common symbols)
+        if not re.match(r'^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\s\-_()〜Ⅴ]+$', self.machine_name):
             raise ValidationError("machine_name", "機種名に無効な文字が含まれています")
 
         # Validate initial investment
@@ -84,14 +86,14 @@ class GameSession:
                                   "開始投資額は100万円以下で入力してください")
 
         # Validate date and time
-        if not isinstance(self.date, datetime):
+        if not isinstance(self.date, date):
             raise ValidationError("date", "日付の形式が正しくありません")
 
         if not isinstance(self.start_time, datetime):
             raise ValidationError("start_time", "開始時間の形式が正しくありません")
 
         # Validate future date constraint
-        if self.date.date() > datetime.now().date():
+        if self.date > datetime.now().date():
             raise ValidationError("date", "未来の日付は入力できません")
 
         # Validate completed session fields
@@ -210,9 +212,17 @@ class GameSession:
         Returns:
             GameSession: New instance created from the data
         """
-        # Convert ISO format strings back to datetime objects
-        date = datetime.fromisoformat(
-            data['date']) if data.get('date') else None
+        # Convert ISO format strings back to datetime/date objects
+        session_date = None
+        if data.get('date'):
+            if isinstance(data['date'], str):
+                # Parse date string to date object
+                session_date = datetime.fromisoformat(data['date']).date()
+            elif isinstance(data['date'], date):
+                session_date = data['date']
+            elif isinstance(data['date'], datetime):
+                session_date = data['date'].date()
+
         start_time = datetime.fromisoformat(
             data['start_time']) if data.get('start_time') else None
         end_time = datetime.fromisoformat(
@@ -225,7 +235,7 @@ class GameSession:
         return cls(
             id=data.get('id'),
             user_id=data['user_id'],
-            date=date,
+            date=session_date,
             start_time=start_time,
             end_time=end_time,
             store_name=data['store_name'],

@@ -1,0 +1,42 @@
+=== Git Status ===
+Return code: 0
+Stdout:
+ M app.py
+ M src/__pycache__/authentication.cpython-312.pyc
+ M src/__pycache__/database.cpython-312.pyc
+ M src/__pycache__/error_handler.cpython-312.pyc
+ M src/__pycache__/models.cpython-312.pyc
+ M src/__pycache__/models_fixed.cpython-312.pyc
+ M src/__pycache__/pachinko_app.cpython-312.pyc
+ M src/__pycache__/stats.cpython-312.pyc
+ M src/__pycache__/ui_manager.cpython-312.pyc
+ M src/database.py
+ M src/models.py
+ M src/models_fixed.py
+ M src/ui_manager.py
+?? check_git.py
+?? pachinko_data.db
+?? streamlit.log
+?? test_date_fix.py
+?? test_output.py
+?? test_results.txt
+?? test_simple.py
+
+Stderr:
+
+
+=== Git Remote ===
+Remote stdout:
+origin	https://github.com/kurosawa-pxh/pachinko-revenue-calculator.git (fetch)
+origin	https://github.com/kurosawa-pxh/pachinko-revenue-calculator.git (push)
+
+
+=== Last Commit ===
+Log stdout:
+a2b0039 Fix email validation and date field type in GameSession model
+
+
+=== Current Branch ===
+Branch stdout:
+* main
+

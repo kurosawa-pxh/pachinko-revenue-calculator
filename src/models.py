@@ -90,14 +90,14 @@ class GameSession:
                                   "開始投資額は100万円以下で入力してください")
 
         # Validate date and time
-        if not isinstance(self.date, datetime):
+        if not isinstance(self.date, date):
             raise ValidationError("date", "日付の形式が正しくありません")
 
         if not isinstance(self.start_time, datetime):
             raise ValidationError("start_time", "開始時間の形式が正しくありません")
 
         # Validate future date constraint
-        if self.date.date() > datetime.now().date():
+        if self.date > datetime.now().date():
             raise ValidationError("date", "未来の日付は入力できません")
 
         # Validate completed session fields
@@ -216,9 +216,17 @@ class GameSession:
         Returns:
             GameSession: New instance created from the data
         """
-        # Convert ISO format strings back to datetime objects
-        date = datetime.fromisoformat(
-            data['date']) if data.get('date') else None
+        # Convert ISO format strings back to datetime/date objects
+        session_date = None
+        if data.get('date'):
+            if isinstance(data['date'], str):
+                # Parse date string to date object
+                session_date = datetime.fromisoformat(data['date']).date()
+            elif isinstance(data['date'], date):
+                session_date = data['date']
+            elif isinstance(data['date'], datetime):
+                session_date = data['date'].date()
+
         start_time = datetime.fromisoformat(
             data['start_time']) if data.get('start_time') else None
         end_time = datetime.fromisoformat(
@@ -231,7 +239,7 @@ class GameSession:
         return cls(
             id=data.get('id'),
             user_id=data['user_id'],
-            date=date,
+            date=session_date,
             start_time=start_time,
             end_time=end_time,
             store_name=data['store_name'],

@@ -9,7 +9,7 @@ from typing import Dict, Any, Optional, List
 from datetime import datetime, date, time, timedelta
 import logging
 
-from .models import GameSession
+from .models_fixed import GameSession
 from .exceptions import ValidationError
 from .database import DatabaseManager
 from .exceptions import DatabaseError

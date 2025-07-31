@@ -424,7 +424,7 @@ class StreamlitApp:
                     if store_name and machine_name:
                         try:
                             # Create session object
-                            from src.models import GameSession
+                            from src.models_fixed import GameSession
 
                             profit = return_amount - final_investment
 
