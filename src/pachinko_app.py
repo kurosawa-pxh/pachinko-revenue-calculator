@@ -243,8 +243,8 @@ class PachinkoApp:
             from .config import get_config
             config_obj = get_config()
 
+            # Don't pass db_path separately - let config handle it
             self.db_manager = DatabaseManager(
-                db_path=db_config['path'],
                 encryption_manager=encryption_manager,
                 config=config_obj
             )
