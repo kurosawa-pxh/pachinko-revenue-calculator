@@ -3,7 +3,7 @@ Data models for the Pachinko Revenue Calculator application.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, date
 from typing import Optional
 import re
 
@@ -22,7 +22,7 @@ class GameSession:
     """
     # Required fields for session start (no defaults)
     user_id: str
-    date: datetime
+    date: date
     start_time: datetime
     store_name: str
     machine_name: str

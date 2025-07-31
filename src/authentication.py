@@ -382,8 +382,8 @@ class AuthenticationManager:
             if not re.match(r'^[a-zA-Z0-9_]{3,20}$', username):
                 raise AuthenticationError("ユーザー名は3-20文字の英数字とアンダースコアのみ使用可能です")
 
-            # Validate email format
-            if not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$', email):
+            # Validate email format (simplified)
+            if not email or '@' not in email or '.' not in email:
                 raise AuthenticationError("有効なメールアドレスを入力してください")
 
             # Validate password strength
