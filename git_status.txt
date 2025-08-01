@@ -1,26 +1,47 @@
 === Git Status ===
 Return code: 0
 Stdout:
- M app.py
- M src/__pycache__/authentication.cpython-312.pyc
+ M git_status.txt
+ D pachinko_data.db
  M src/__pycache__/database.cpython-312.pyc
- M src/__pycache__/error_handler.cpython-312.pyc
- M src/__pycache__/models.cpython-312.pyc
- M src/__pycache__/models_fixed.cpython-312.pyc
  M src/__pycache__/pachinko_app.cpython-312.pyc
- M src/__pycache__/stats.cpython-312.pyc
  M src/__pycache__/ui_manager.cpython-312.pyc
- M src/database.py
- M src/models.py
- M src/models_fixed.py
- M src/ui_manager.py
-?? check_git.py
-?? pachinko_data.db
-?? streamlit.log
-?? test_date_fix.py
-?? test_output.py
-?? test_results.txt
-?? test_simple.py
+ M streamlit.log
+?? app_init_test.txt
+?? auth_debug.txt
+?? check_files.py
+?? connection_error_debug.txt
+?? database_debug.txt
+?? db_type_debug.txt
+?? debug_auth.py
+?? debug_connection_error.py
+?? debug_database.py
+?? debug_db_type.py
+?? file_check.txt
+?? force_db_init.py
+?? force_init_log.txt
+?? push_autofix.py
+?? push_changes.py
+?? push_complete_fix.py
+?? push_config_autofix.py
+?? push_database_fixes.py
+?? push_encryption_fix.py
+?? push_final_fix.py
+?? push_kiro_autofix.py
+?? push_latest_fixes.py
+?? session_creation_test.txt
+?? sqlite_test.txt
+?? streamlit_clean_start.log
+?? streamlit_debug.log
+?? streamlit_final.log
+?? streamlit_final_fix.log
+?? streamlit_fixed.log
+?? streamlit_new.log
+?? streamlit_no_encryption.log
+?? streamlit_with_debug.log
+?? test_app_init.py
+?? test_session_creation.py
+?? test_sqlite_direct.py
 
 Stderr:
 
@@ -33,7 +54,7 @@ origin	https://github.com/kurosawa-pxh/pachinko-revenue-calculator.git (push)
 
 === Last Commit ===
 Log stdout:
-a2b0039 Fix email validation and date field type in GameSession model
+55c51a9 Fix dashboard display by disabling encryption in development
 
 
 === Current Branch ===

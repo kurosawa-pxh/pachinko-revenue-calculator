@@ -1,0 +1,17 @@
+🧪 Session Creation Test
+==================================================
+
+1. Setting up test environment...
+✅ DatabaseManager created with db_type: sqlite
+
+2. Creating test session...
+✅ GameSession object created
+
+3. Attempting to save session...
+✅ Session created successfully with ID: 13
+✅ Session retrieved successfully
+Retrieved session: 2025/07/31 テスト店舗 テスト機種 (進行中) 収支: 未計算
+✅ Test session cleaned up
+
+==================================================
+Session creation test completed

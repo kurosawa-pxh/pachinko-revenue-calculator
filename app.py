@@ -337,7 +337,13 @@ class StreamlitApp:
         try:
             # Get database manager
             db_manager = self.app.get_database_manager()
+            auth_manager = self.app.get_auth_manager()
             stats_calculator = self.app.get_stats_calculator()
+
+            # Ensure encryption manager is set
+            if auth_manager and not db_manager.encryption_manager:
+                db_manager.set_encryption_manager(auth_manager)
+                self.logger.info("Encryption manager set for dashboard")
 
             # Simple dashboard implementation
             st.subheader("収支サマリー")
@@ -372,9 +378,17 @@ class StreamlitApp:
                         with col1:
                             st.write(f"📅 {session.date}")
                         with col2:
-                            st.write(f"🏪 {session.store_name}")
+                            # Display store name (should be decrypted now)
+                            store_display = session.store_name
+                            if len(store_display) > 20:  # Truncate long names
+                                store_display = store_display[:17] + "..."
+                            st.write(f"🏪 {store_display}")
                         with col3:
-                            st.write(f"🎰 {session.machine_name}")
+                            # Display machine name (should be decrypted now)
+                            machine_display = session.machine_name
+                            if len(machine_display) > 15:  # Truncate long names
+                                machine_display = machine_display[:12] + "..."
+                            st.write(f"🎰 {machine_display}")
                         with col4:
                             profit_color = "green" if (
                                 session.profit or 0) >= 0 else "red"
@@ -386,6 +400,9 @@ class StreamlitApp:
         except Exception as e:
             st.error("ダッシュボードの表示中にエラーが発生しました。")
             self.logger.error(f"Dashboard error: {e}")
+            # Show more detailed error in development
+            if os.getenv('DEBUG', 'false').lower() == 'true':
+                st.exception(e)
 
     def _render_input_page(self, ui_manager) -> None:
         """Render the input page."""
@@ -462,7 +479,12 @@ class StreamlitApp:
 
         try:
             db_manager = self.app.get_database_manager()
+            auth_manager = self.app.get_auth_manager()
             user_id = str(st.session_state.user_id)
+
+            # Ensure encryption manager is set
+            if auth_manager and not db_manager.encryption_manager:
+                db_manager.set_encryption_manager(auth_manager)
 
             # Get all sessions
             sessions = db_manager.get_sessions(user_id, limit=50)
@@ -478,9 +500,17 @@ class StreamlitApp:
                         with col1:
                             st.write(f"📅 {session.date}")
                         with col2:
-                            st.write(f"🏪 {session.store_name}")
+                            # Display store name (should be decrypted)
+                            store_display = session.store_name
+                            if len(store_display) > 15:
+                                store_display = store_display[:12] + "..."
+                            st.write(f"🏪 {store_display}")
                         with col3:
-                            st.write(f"🎰 {session.machine_name}")
+                            # Display machine name (should be decrypted)
+                            machine_display = session.machine_name
+                            if len(machine_display) > 12:
+                                machine_display = machine_display[:9] + "..."
+                            st.write(f"🎰 {machine_display}")
                         with col4:
                             st.write(f"💰 ¥{session.final_investment:,}")
                         with col5:
@@ -499,6 +529,9 @@ class StreamlitApp:
         except Exception as e:
             st.error("履歴の表示中にエラーが発生しました。")
             self.logger.error(f"History page error: {e}")
+            # Show more detailed error in development
+            if os.getenv('DEBUG', 'false').lower() == 'true':
+                st.exception(e)
 
     def _render_stats_page(self, ui_manager) -> None:
         """Render the statistics page."""

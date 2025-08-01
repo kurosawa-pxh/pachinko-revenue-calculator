@@ -1,4 +1,4 @@
-2025-07-31 14:03:52.360 
+2025-07-31 16:32:31.999 
 Warning: the config option 'server.enableCORS=false' is not compatible with
 'server.enableXsrfProtection=true'.
 As a result, 'server.enableCORS' is being overridden to 'true'.
@@ -10,6 +10,10 @@ cross-origin resource sharing.
 
 If cross origin resource sharing is required, please disable server.enableXsrfProtection.
             
+2025-07-31 16:32:32.004 Starting server...
+2025-07-31 16:32:32.004 Serving static content from /Users/kurosawashun/Desktop/win-or-lose/.venv/lib/python3.12/site-packages/streamlit/static
+2025-07-31 16:32:32.008 Server started on port 8501
+2025-07-31 16:32:32.009 Runtime state: RuntimeState.INITIAL -> RuntimeState.NO_SESSIONS_CONNECTED
 
   You can now view your Streamlit app in your browser.
 
@@ -22,4 +26,8 @@ If cross origin resource sharing is required, please disable server.enableXsrfPr
   $ xcode-select --install
   $ pip install watchdog
             
+2025-07-31 16:32:32.559 Setting up signal handler
   Stopping...
+2025-07-31 16:37:49.804 Runtime stopping...
+2025-07-31 16:37:49.805 Runtime state: RuntimeState.NO_SESSIONS_CONNECTED -> RuntimeState.STOPPING
+2025-07-31 16:37:49.808 Runtime state: RuntimeState.STOPPING -> RuntimeState.STOPPED

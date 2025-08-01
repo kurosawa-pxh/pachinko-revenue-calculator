@@ -1,0 +1,74 @@
+📁 File Check Results
+==================================================
+
+Current directory: /Users/kurosawashun/Desktop/win-or-lose/pachinko-app
+
+All files in directory:
+  test_database_crud.py: size=24086 bytes
+  generate_encryption_key.py: size=1360 bytes
+  encryption.key: size=44 bytes
+  test_database.py: size=9908 bytes
+  test_stats.py: size=15197 bytes
+  check_files.py: size=1973 bytes
+  database_debug.txt: size=1125 bytes
+  verify_integration.py: size=6139 bytes
+  demo_encryption_integration.py: size=9243 bytes
+  .DS_Store: size=6148 bytes
+  demo_schema.py: size=3296 bytes
+  requirements.txt: size=189 bytes
+  test_results.txt: size=366 bytes
+  debug_database.py: size=4318 bytes
+  auth_debug.txt: size=509 bytes
+  test_database_schema.py: size=8824 bytes
+  test_ui_integration.py: size=29239 bytes
+  pachinko_auth.db: size=49152 bytes
+  git_status.txt: size=983 bytes
+  test_error_handling.py: size=0 bytes
+  test_crud_comprehensive.py: size=17620 bytes
+  test_initialization.py: size=7167 bytes
+  test_stats_comprehensive.py: size=26417 bytes
+  test_simple.py: size=1883 bytes
+  test_models_comprehensive.py: size=19765 bytes
+  test_output.py: size=2344 bytes
+  requirements_minimal.txt: size=499 bytes
+  test_stats_calculations.py: size=29063 bytes
+  test_integration_main.py: size=5340 bytes
+  packages_minimal.txt: size=9 bytes
+  file_check.txt: size=0 bytes
+  test_database_operations.py: size=21686 bytes
+  test_dashboard_integration.py: size=6647 bytes
+  DEPLOYMENT.md: size=5485 bytes
+  demo_export.py: size=4356 bytes
+  requirements_core.txt: size=54 bytes
+  test_encryption_security.py: size=15292 bytes
+  demo_offline_integration.py: size=7872 bytes
+  app.py: size=28760 bytes
+  pachinko_data.db: size=45056 bytes
+  requirements_emergency.txt: size=31 bytes
+  test_models.py: size=5322 bytes
+  debug_deployment.py: size=2608 bytes
+  debug_auth.py: size=2682 bytes
+  streamlit.log: size=808 bytes
+  verify_deployment.py: size=6129 bytes
+  packages.txt: size=66 bytes
+  test_history_functionality.py: size=14304 bytes
+  test_task_2_3_verification.py: size=10946 bytes
+  packages_emergency.txt: size=0 bytes
+  test_responsive_design.py: size=9293 bytes
+  check_git.py: size=1775 bytes
+  test_ui_manager.py: size=7722 bytes
+  test_date_fix.py: size=1872 bytes
+  test_offline_functionality.py: size=14949 bytes
+  test_export_functionality.py: size=12279 bytes
+
+Database files:
+  Found: pachinko_auth.db
+    Tables: ['users', 'sqlite_sequence', 'user_sessions', 'security_logs']
+    Status: ✅ OK
+  Found: pachinko_data.db
+    Tables: ['schema_version', 'game_sessions', 'sqlite_sequence']
+    Status: ✅ OK
+
+Expected database files:
+  ✅ pachinko_data.db exists
+  ✅ pachinko_auth.db exists

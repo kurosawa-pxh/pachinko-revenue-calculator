@@ -1,0 +1,21 @@
+🔍 SQLite Direct Test
+==================================================
+
+1. Checking database file: pachinko_data.db
+✅ File exists, size: 45056 bytes
+Permissions: 0o100644
+Readable: True
+Writable: True
+
+2. Testing SQLite connection...
+✅ Connection successful
+Database integrity: ok
+Tables: ['schema_version', 'game_sessions', 'sqlite_sequence']
+Sessions count: 0
+✅ Connection closed successfully
+
+3. Testing with row_factory...
+✅ Row factory test successful, count: 0
+
+==================================================
+SQLite test completed

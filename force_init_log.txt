@@ -1,0 +1,38 @@
+🔧 Force Database Initialization
+==================================================
+
+1. Creating DatabaseManager...
+✅ DatabaseManager created
+
+2. Checking initialization status...
+Database initialized: True
+
+3. Force initialization...
+✅ Connection obtained
+Current schema version: 1
+Database already initialized
+
+4. Testing basic operations...
+Sessions count: 0
+Table columns: 14
+  id (INTEGER)
+  user_id (TEXT)
+  date (DATE)
+  start_time (TIMESTAMP)
+  end_time (TIMESTAMP)
+  store_name (TEXT)
+  machine_name (TEXT)
+  initial_investment (INTEGER)
+  final_investment (INTEGER)
+  return_amount (INTEGER)
+  profit (INTEGER)
+  is_completed (BOOLEAN)
+  created_at (TIMESTAMP)
+  updated_at (TIMESTAMP)
+
+5. Final verification...
+✅ Test session created with ID: 10
+✅ Test session cleaned up
+
+==================================================
+Force initialization completed

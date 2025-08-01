@@ -809,26 +809,38 @@ class DatabaseManager:
         # Decrypt sensitive data if encryption manager is available
         if self.encryption_manager:
             try:
-                # Prepare data for decryption (add encryption flags)
-                encrypted_data = {
-                    'store_name': data['store_name'],
-                    'machine_name': data['machine_name'],
-                    'store_name_encrypted': True,
-                    'machine_name_encrypted': True
-                }
+                # Check if data appears to be encrypted (base64-like strings)
+                store_encrypted = self._is_encrypted_data(data['store_name'])
+                machine_encrypted = self._is_encrypted_data(
+                    data['machine_name'])
 
-                # Decrypt the data
-                decrypted_data = self.encryption_manager.decrypt_user_data(
-                    encrypted_data)
+                if store_encrypted or machine_encrypted:
+                    # Prepare data for decryption
+                    encrypted_data = {
+                        'store_name': data['store_name'],
+                        'machine_name': data['machine_name'],
+                        'store_name_encrypted': store_encrypted,
+                        'machine_name_encrypted': machine_encrypted
+                    }
 
-                # Update the data with decrypted values
-                data['store_name'] = decrypted_data['store_name']
-                data['machine_name'] = decrypted_data['machine_name']
+                    # Decrypt the data
+                    decrypted_data = self.encryption_manager.decrypt_user_data(
+                        encrypted_data)
+
+                    # Update the data with decrypted values
+                    if store_encrypted:
+                        data['store_name'] = decrypted_data['store_name']
+                    if machine_encrypted:
+                        data['machine_name'] = decrypted_data['machine_name']
+
+                    self.logger.debug(
+                        f"Successfully decrypted session data (ID: {data['id']})")
 
             except Exception as e:
                 # If decryption fails, assume data is not encrypted (backward compatibility)
                 self.logger.warning(
                     f"Failed to decrypt session data (ID: {data['id']}): {e}")
+                # Continue with original data
 
         return GameSession.from_dict(data)
 
@@ -845,6 +857,31 @@ class DatabaseManager:
             'avg_investment': 0,
             'avg_profit': 0
         }
+
+    def _is_encrypted_data(self, data: str) -> bool:
+        """
+        Check if data appears to be encrypted (base64-like string).
+
+        Args:
+            data: String data to check
+
+        Returns:
+            bool: True if data appears to be encrypted
+        """
+        if not data or len(data) < 10:
+            return False
+
+        # Check for base64-like patterns (common in encrypted data)
+        import re
+        base64_pattern = r'^[A-Za-z0-9+/=]+$'
+
+        # Check if it's a long base64-like string
+        if len(data) > 20 and re.match(base64_pattern, data):
+            # Additional check: encrypted data often has specific prefixes
+            if data.startswith(('Z0FBQUFBQm', 'gAAAAA', 'AAAAA')):
+                return True
+
+        return False
 
     def check_data_integrity(self) -> Dict[str, Any]:
         """
@@ -1156,12 +1193,28 @@ class DatabaseManager:
             # Decrypt sensitive data if encryption manager is available
             if self.encryption_manager:
                 try:
-                    decrypted_data = self.encryption_manager.decrypt_user_data({
-                        'store_name': data['store_name'],
-                        'machine_name': data['machine_name']
-                    })
-                    data['store_name'] = decrypted_data['store_name']
-                    data['machine_name'] = decrypted_data['machine_name']
+                    # Check if data appears to be encrypted
+                    store_encrypted = self._is_encrypted_data(
+                        data['store_name'])
+                    machine_encrypted = self._is_encrypted_data(
+                        data['machine_name'])
+
+                    if store_encrypted or machine_encrypted:
+                        decrypted_data = self.encryption_manager.decrypt_user_data({
+                            'store_name': data['store_name'],
+                            'machine_name': data['machine_name'],
+                            'store_name_encrypted': store_encrypted,
+                            'machine_name_encrypted': machine_encrypted
+                        })
+
+                        if store_encrypted:
+                            data['store_name'] = decrypted_data['store_name']
+                        if machine_encrypted:
+                            data['machine_name'] = decrypted_data['machine_name']
+
+                        self.logger.debug(
+                            f"Successfully decrypted session data")
+
                 except Exception as e:
                     self.logger.warning(f"Failed to decrypt session data: {e}")
                     # Continue with encrypted data rather than failing

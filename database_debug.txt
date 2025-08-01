@@ -1,0 +1,29 @@
+🔍 Database Connection Debug
+==================================================
+
+1. Testing imports...
+✅ All imports successful
+
+2. Testing config...
+Database config: {'type': 'sqlite', 'path': 'pachinko_data.db', 'auth_path': 'pachinko_auth.db', 'enable_encryption': True}
+
+3. Testing DatabaseManager creation...
+✅ DatabaseManager created
+Database type: sqlite
+Database path: pachinko_data.db
+
+4. Testing database connection...
+✅ Database connection successful
+Tables found: ['schema_version', 'game_sessions', 'sqlite_sequence']
+
+5. Testing session creation...
+✅ GameSession object created
+✅ Session saved with ID: 9
+✅ Session retrieved successfully
+✅ Test session cleaned up
+
+6. Testing database info...
+Database info: {'schema_version': 1, 'tables': ['game_sessions', 'schema_version'], 'indexes': ['idx_created_at', 'idx_date_desc', 'idx_user_completed', 'idx_user_date', 'idx_user_machine', 'idx_user_month', 'idx_user_store'], 'total_sessions': 0, 'completed_sessions': 0, 'database_path': 'pachinko_data.db', 'database_size': 45056}
+
+==================================================
+Debug completed

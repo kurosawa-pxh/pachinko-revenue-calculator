@@ -1,0 +1,31 @@
+🔍 Database Type Debug
+==================================================
+
+1. Checking config...
+Database config: {'type': 'sqlite', 'path': 'pachinko_data.db', 'auth_path': 'pachinko_auth.db', 'enable_encryption': True}
+Database type from config: sqlite
+
+2. Checking DatabaseManager...
+DatabaseManager db_type: sqlite
+DatabaseManager db_config: {'type': 'sqlite', 'path': 'pachinko_data.db', 'auth_path': 'pachinko_auth.db', 'enable_encryption': True}
+
+3. Testing INSERT SQL generation...
+Using SQLite INSERT SQL (without RETURNING)
+This SQL uses lastrowid for ID
+
+Generated SQL:
+
+                INSERT INTO game_sessions (
+                    user_id, date, start_time, end_time, store_name, machine_name,
+                    initial_investment, final_investment, return_amount, profit,
+                    is_completed, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                
+
+4. Testing actual database connection...
+✅ Connection successful
+✅ SQLite version: 3.45.3
+Database is actually SQLite
+
+==================================================
+Database type debug completed

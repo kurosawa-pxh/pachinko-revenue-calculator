@@ -1,0 +1,24 @@
+🔍 Connection Error Debug (Error: 0)
+==================================================
+
+1. Testing direct SQLite connection...
+❌ Direct SQLite connection failed: cannot access local variable 'sqlite3' where it is not associated with a value
+Error type: <class 'UnboundLocalError'>
+Error args: ("cannot access local variable 'sqlite3' where it is not associated with a value",)
+
+2. Testing DatabaseManager connection...
+✅ DatabaseManager created
+✅ DatabaseManager connection successful
+✅ DatabaseManager query successful, count: 0
+
+3. Testing config values...
+Database config: {'type': 'sqlite', 'path': 'pachinko_data.db', 'auth_path': 'pachinko_auth.db', 'enable_encryption': True}
+Database file exists: pachinko_data.db
+File size: 45056 bytes
+File permissions: 0o100644
+
+4. Testing with minimal example...
+✅ Minimal context manager test successful
+
+==================================================
+Connection error debug completed
